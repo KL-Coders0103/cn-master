@@ -32,7 +32,6 @@ export default function LoginScreen({ navigation }: any) {
         onPress={async () => {
             try{
                 await signInWithEmailAndPassword(auth,email,password);
-                navigation.navigate("Home");
             } catch (error:any){
                 alert(error.message);
             }

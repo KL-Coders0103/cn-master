@@ -1,7 +1,8 @@
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import { useState } from "react";
-import { auth } from "../services/firebase";
+import { auth, db } from "../services/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
 
 export default function RegisterScreen({ navigation }: any) {
@@ -30,13 +31,25 @@ export default function RegisterScreen({ navigation }: any) {
       <TouchableOpacity
         style={styles.button}
         onPress={async () => {
-            try{
-                await createUserWithEmailAndPassword(auth, email, password);
-                alert("Account Created!");
-                navigation.navigate("Home");
-            } catch(error: any){
-                alert(error.message);
-            }
+          try {
+            const userCredential = await createUserWithEmailAndPassword(
+              auth,
+              email,
+              password
+            );
+
+            await setDoc(doc(db, "users", userCredential.user.uid), {
+              email: email,
+              role: "student",
+              streak: 0,
+              totalScore: 0,
+              createdAt: serverTimestamp(),
+            });
+
+            alert("User Registered & Saved!");
+          } catch (error: any) {
+            alert(error.message);
+          }
         }}
       >
         <Text style={styles.buttonText}>Register</Text>
