@@ -3,9 +3,12 @@ import { signOut } from "firebase/auth";
 import { auth, db } from "../services/firebase";
 import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
+import { useNavigation } from "@react-navigation/native";
+
 
 export default function HomeScreen() {
   const [userData, setUserData] = useState<any>(null);
+  const navigation : any = useNavigation();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -36,6 +39,8 @@ export default function HomeScreen() {
           <Text>Total Score: {userData.totalScore}</Text>
         </>
       )}
+
+      <Button title="Go to Notes" onPress={() => navigation.navigate("Notes")} />
 
       <Button title="Logout" onPress={() => signOut(auth)} />
     </View>
