@@ -2,7 +2,7 @@ import { View, Text, Button } from "react-native";
 import { signOut } from "firebase/auth";
 import { auth, db } from "../services/firebase";
 import { useEffect, useState } from "react";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import { useNavigation } from "@react-navigation/native";
 
 
@@ -11,20 +11,18 @@ export default function HomeScreen() {
   const navigation : any = useNavigation();
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const currentUser = auth.currentUser;
+    const currentUser = auth.currentUser;
 
-      if (currentUser) {
-        const docRef = doc(db, "users", currentUser.uid);
-        const docSnap = await getDoc(docRef);
+    if(!currentUser) return;
 
-        if (docSnap.exists()) {
-          setUserData(docSnap.data());
-        }
+    const userRef = doc(db, "users", currentUser.uid);
+    const unsubcribe = onSnapshot(userRef, (docSnap) => {
+      if(docSnap.exists()) {
+        setUserData(docSnap.data());
       }
-    };
+    });
 
-    fetchUser();
+    return unsubcribe;
   }, []);
 
   return (
@@ -37,10 +35,12 @@ export default function HomeScreen() {
           <Text>Role: {userData.role}</Text>
           <Text>Streak: {userData.streak}</Text>
           <Text>Total Score: {userData.totalScore}</Text>
+          <Text>Total Attempts: {userData.totalAttempts}</Text>
         </>
       )}
 
       <Button title="Go to Notes" onPress={() => navigation.navigate("Notes")} />
+      <Button title="Start Quiz" onPress={() => navigation.navigate("Quiz")} />
 
       <Button title="Logout" onPress={() => signOut(auth)} />
     </View>

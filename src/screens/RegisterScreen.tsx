@@ -43,6 +43,7 @@ export default function RegisterScreen({ navigation }: any) {
               role: "student",
               streak: 0,
               totalScore: 0,
+              totalAttempts: 0,
               createdAt: serverTimestamp(),
             });
 
