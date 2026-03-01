@@ -9,34 +9,29 @@ import {
   collection,
   addDoc,
 } from "firebase/firestore";
+import { questionBank, Question } from "../data/questions";
 
-const questions = [
-  {
-    question: "How many layers are in OSI model?",
-    options: ["4", "5", "7", "6"],
-    answer: "7",
-  },
-  {
-    question: "Which protocol is used for web browsing?",
-    options: ["FTP", "HTTP", "SMTP", "SNMP"],
-    answer: "HTTP",
-  },
-  {
-    question: "Which layer handles routing?",
-    options: [
-      "Transport Layer",
-      "Network Layer",
-      "Session Layer",
-      "Application Layer",
-    ],
-    answer: "Network Layer",
-  },
-];
-
-export default function QuizScreen() {
+export default function QuizScreen({ route, navigation }: any) {
+  const { topic } = route.params || {};
+  const questions: Question[] = topic ? questionBank[topic] : [];
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
+
+  // Prevent crash if topic invalid
+  if (!topic || !questions || questions.length === 0) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.heading}>Invalid Topic</Text>
+        <TouchableOpacity
+          style={styles.option}
+          onPress={() => navigation.goBack()}
+        >
+          <Text style={styles.optionText}>Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   const handleAnswer = (selected: string) => {
     if (selected === questions[currentQuestion].answer) {
@@ -52,7 +47,7 @@ export default function QuizScreen() {
     }
   };
 
-  // 🔥 Save score only once when quiz finishes
+  // 🔥 Save score once when quiz completes
   useEffect(() => {
     if (!showResult) return;
 
@@ -79,18 +74,14 @@ export default function QuizScreen() {
         const diffDays = diffTime / (1000 * 3600 * 24);
 
         if (diffDays === 0) {
-          // Same day → no streak increase
           newStreak = userData.streak || 1;
         } else if (diffDays === 1) {
-          // Yesterday → increase
           newStreak = (userData.streak || 0) + 1;
         } else {
-          // Missed more than 1 day → reset
           newStreak = 1;
         }
       }
 
-      // Update main user doc
       await updateDoc(userRef, {
         totalScore: increment(score),
         totalAttempts: increment(1),
@@ -98,10 +89,10 @@ export default function QuizScreen() {
         lastQuizDate: new Date(),
       });
 
-      // Add quiz history
       await addDoc(
         collection(db, "users", currentUser.uid, "quizHistory"),
         {
+          topic: topic,
           score: score,
           totalQuestions: questions.length,
           percentage: (score / questions.length) * 100,
@@ -113,6 +104,7 @@ export default function QuizScreen() {
     saveScore();
   }, [showResult]);
 
+  // 🔥 Result Screen
   if (showResult) {
     return (
       <View style={styles.container}>
@@ -120,13 +112,36 @@ export default function QuizScreen() {
         <Text style={styles.score}>
           Your Score: {score} / {questions.length}
         </Text>
+
+        <TouchableOpacity
+          style={styles.option}
+          onPress={() => {
+            setCurrentQuestion(0);
+            setScore(0);
+            setShowResult(false);
+          }}
+        >
+          <Text style={styles.optionText}>Retry Quiz</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.option}
+          onPress={() => navigation.navigate("Home")}
+        >
+          <Text style={styles.optionText}>Back to Home</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
+  // 🔥 Question Screen
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>
+        {topic} Quiz
+      </Text>
+
+      <Text style={{ marginBottom: 10 }}>
         Question {currentQuestion + 1}/{questions.length}
       </Text>
 
@@ -154,9 +169,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   heading: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
     marginBottom: 20,
+    textAlign: "center",
   },
   question: {
     fontSize: 18,
@@ -167,6 +183,7 @@ const styles = StyleSheet.create({
     padding: 15,
     marginBottom: 10,
     borderRadius: 8,
+    alignItems: "center",
   },
   optionText: {
     color: "#fff",
@@ -174,6 +191,6 @@ const styles = StyleSheet.create({
   },
   score: {
     fontSize: 22,
-    marginTop: 20,
+    marginBottom: 20,
   },
 });
