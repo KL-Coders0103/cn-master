@@ -7,6 +7,7 @@ import { useAuth } from "../context/AuthContext";
 import NotesScreen from "../screens/NotesScreen";
 import QuizScreen from "../screens/QuizScreen";
 import HistoryScreen from "../screens/HistoryScreen";
+import LeaderboardScreen from "../screens/LeaderboardScreen";
 
 
 const Stack = createNativeStackNavigator();
@@ -26,6 +27,7 @@ export default function AppNavigator() {
                         <Stack.Screen name="Notes" component={NotesScreen} />
                         <Stack.Screen name="Quiz" component={QuizScreen} />
                         <Stack.Screen name="History" component={HistoryScreen} />
+                        <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
                     </>
                 ) : (
                     <>

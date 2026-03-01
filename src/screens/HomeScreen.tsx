@@ -79,6 +79,8 @@ useEffect(() => {
       <Button title="Go to Notes" onPress={() => navigation.navigate("Notes")} />
       <Button title="Start Quiz" onPress={() => navigation.navigate("Quiz")} />
       <Button title="View History" onPress={() => navigation.navigate("History")} />
+      <Button title="View Leaderboard"
+      onPress={() => navigation.navigate("Leaderboard")}/>
 
       <Button title="Logout" onPress={() => signOut(auth)} />
     </View>
