@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useState } from "react";
 import { auth, db } from "../services/firebase";
-import { doc, updateDoc, increment } from "firebase/firestore";
+import { doc, updateDoc, increment, getDoc } from "firebase/firestore";
 
 const questions = [
   {
@@ -48,17 +48,36 @@ export default function QuizScreen() {
   if (showResult) {
 
   const saveScore = async () => {
-    const currentUser = auth.currentUser;
+  const currentUser = auth.currentUser;
+  if (!currentUser) return;
 
-    if (currentUser) {
-      const userRef = doc(db, "users", currentUser.uid);
+  const userRef = doc(db, "users", currentUser.uid);
 
-      await updateDoc(userRef, {
-        totalScore: increment(score),
-        totalAttempts: increment(1),
-      });
+  const today = new Date();
+  const todayString = today.toDateString();
+
+  const userSnap = await getDoc(userRef);
+  const userData = userSnap.data();
+
+  let newStreak = 1;
+
+  if (userData?.lastQuizDate) {
+    const lastDate = new Date(userData.lastQuizDate);
+    const diffTime = today.getTime() - lastDate.getTime();
+    const diffDays = diffTime / (1000 * 3600 * 24);
+
+    if (diffDays < 2) {
+      newStreak = (userData.streak || 0) + 1;
     }
-  };
+  }
+
+  await updateDoc(userRef, {
+    totalScore: increment(score),
+    totalAttempts: increment(1),
+    streak: newStreak,
+    lastQuizDate: today,
+  });
+};
 
   saveScore();
 

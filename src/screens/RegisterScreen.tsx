@@ -44,6 +44,7 @@ export default function RegisterScreen({ navigation }: any) {
               streak: 0,
               totalScore: 0,
               totalAttempts: 0,
+              lastQuizDate: null,
               createdAt: serverTimestamp(),
             });
 
