@@ -1,7 +1,14 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { auth, db } from "../services/firebase";
-import { doc, updateDoc, increment, getDoc } from "firebase/firestore";
+import {
+  doc,
+  updateDoc,
+  increment,
+  getDoc,
+  collection,
+  addDoc,
+} from "firebase/firestore";
 
 const questions = [
   {
@@ -33,7 +40,7 @@ export default function QuizScreen() {
 
   const handleAnswer = (selected: string) => {
     if (selected === questions[currentQuestion].answer) {
-      setScore(score + 1);
+      setScore((prev) => prev + 1);
     }
 
     const nextQuestion = currentQuestion + 1;
@@ -45,51 +52,77 @@ export default function QuizScreen() {
     }
   };
 
+  // 🔥 Save score only once when quiz finishes
+  useEffect(() => {
+    if (!showResult) return;
+
+    const saveScore = async () => {
+      const currentUser = auth.currentUser;
+      if (!currentUser) return;
+
+      const userRef = doc(db, "users", currentUser.uid);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const userSnap = await getDoc(userRef);
+      const userData = userSnap.data();
+
+      let newStreak = 1;
+
+      if (userData?.lastQuizDate) {
+        const lastDate = new Date(
+          userData.lastQuizDate.seconds * 1000
+        );
+        lastDate.setHours(0, 0, 0, 0);
+
+        const diffTime = today.getTime() - lastDate.getTime();
+        const diffDays = diffTime / (1000 * 3600 * 24);
+
+        if (diffDays === 0) {
+          // Same day → no streak increase
+          newStreak = userData.streak || 1;
+        } else if (diffDays === 1) {
+          // Yesterday → increase
+          newStreak = (userData.streak || 0) + 1;
+        } else {
+          // Missed more than 1 day → reset
+          newStreak = 1;
+        }
+      }
+
+      // Update main user doc
+      await updateDoc(userRef, {
+        totalScore: increment(score),
+        totalAttempts: increment(1),
+        streak: newStreak,
+        lastQuizDate: new Date(),
+      });
+
+      // Add quiz history
+      await addDoc(
+        collection(db, "users", currentUser.uid, "quizHistory"),
+        {
+          score: score,
+          totalQuestions: questions.length,
+          percentage: (score / questions.length) * 100,
+          date: new Date(),
+        }
+      );
+    };
+
+    saveScore();
+  }, [showResult]);
+
   if (showResult) {
-
-  const saveScore = async () => {
-  const currentUser = auth.currentUser;
-  if (!currentUser) return;
-
-  const userRef = doc(db, "users", currentUser.uid);
-
-  const today = new Date();
-  const todayString = today.toDateString();
-
-  const userSnap = await getDoc(userRef);
-  const userData = userSnap.data();
-
-  let newStreak = 1;
-
-  if (userData?.lastQuizDate) {
-    const lastDate = new Date(userData.lastQuizDate);
-    const diffTime = today.getTime() - lastDate.getTime();
-    const diffDays = diffTime / (1000 * 3600 * 24);
-
-    if (diffDays < 2) {
-      newStreak = (userData.streak || 0) + 1;
-    }
+    return (
+      <View style={styles.container}>
+        <Text style={styles.heading}>Quiz Completed 🎉</Text>
+        <Text style={styles.score}>
+          Your Score: {score} / {questions.length}
+        </Text>
+      </View>
+    );
   }
-
-  await updateDoc(userRef, {
-    totalScore: increment(score),
-    totalAttempts: increment(1),
-    streak: newStreak,
-    lastQuizDate: today,
-  });
-};
-
-  saveScore();
-
-  return (
-    <View style={styles.container}>
-      <Text style={styles.heading}>Quiz Completed 🎉</Text>
-      <Text style={styles.score}>
-        Your Score: {score} / {questions.length}
-      </Text>
-    </View>
-  );
-}
 
   return (
     <View style={styles.container}>

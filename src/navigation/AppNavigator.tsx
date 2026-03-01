@@ -6,6 +6,8 @@ import HomeScreen from "../screens/HomeScreen";
 import { useAuth } from "../context/AuthContext";
 import NotesScreen from "../screens/NotesScreen";
 import QuizScreen from "../screens/QuizScreen";
+import HistoryScreen from "../screens/HistoryScreen";
+
 
 const Stack = createNativeStackNavigator();
 
@@ -23,6 +25,7 @@ export default function AppNavigator() {
                         <Stack.Screen name="Home" component={HomeScreen} />
                         <Stack.Screen name="Notes" component={NotesScreen} />
                         <Stack.Screen name="Quiz" component={QuizScreen} />
+                        <Stack.Screen name="History" component={HistoryScreen} />
                     </>
                 ) : (
                     <>
