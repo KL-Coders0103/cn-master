@@ -9,6 +9,8 @@ import QuizScreen from "../screens/QuizScreen";
 import HistoryScreen from "../screens/HistoryScreen";
 import LeaderboardScreen from "../screens/LeaderboardScreen";
 import SelectTopicScreen from "../screens/SelectTopicScreen";
+import AdminDashboard from "../screens/AdminDashboard";
+import AddQuestionScreen from "../screens/AddQuestionScreen";
 
 
 const Stack = createNativeStackNavigator();
@@ -30,6 +32,8 @@ export default function AppNavigator() {
                         <Stack.Screen name="History" component={HistoryScreen} />
                         <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
                         <Stack.Screen name="SelectTopic" component={SelectTopicScreen} />
+                        <Stack.Screen name="Admin" component={AdminDashboard}/>
+<Stack.Screen name="AddQuestion" component={AddQuestionScreen}/>
                     </>
                 ) : (
                     <>

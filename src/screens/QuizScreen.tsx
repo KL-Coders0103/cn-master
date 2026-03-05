@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { auth, db } from "../services/firebase";
 import {
   doc,
@@ -9,7 +9,8 @@ import {
   collection,
   addDoc,
 } from "firebase/firestore";
-import { questionBank, Question } from "../data/questions";
+import { Question } from "../data/questions";
+import { fetchQuestionsByTopic } from "../services/questionService";
 
 function shuffleArray(array: Question[]) {
   return [...array].sort(() => Math.random() - 0.5);
@@ -18,28 +19,49 @@ function shuffleArray(array: Question[]) {
 export default function QuizScreen({ route, navigation }: any) {
   const { topic } = route.params || {};
 
-  const questions: Question[] = useMemo(() => {
-    return topic ? shuffleArray(questionBank[topic]) : [];
-  }, [topic]);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [timeLeft, setTimeLeft] = useState(15);
 
-  if (!topic || !questions || questions.length === 0) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.heading}>Invalid Topic</Text>
-        <TouchableOpacity
-          style={styles.option}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={styles.optionText}>Go Back</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
+  // 🔹 Load Questions from Firestore
+  useEffect(() => {
+    const loadQuestions = async () => {
+      try {
+        const data = await fetchQuestionsByTopic(topic);
+        const shuffled = shuffleArray(data);
+        setQuestions(shuffled);
+      } catch (error) {
+        console.log("Question fetch error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (topic) {
+      loadQuestions();
+    }
+  }, [topic]);
+
+  // 🔹 Timer Logic
+  useEffect(() => {
+    if (showResult) return;
+
+    if (timeLeft === 0) {
+      handleAnswer("");
+      setTimeLeft(15);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [timeLeft, currentQuestion, showResult]);
 
   const handleAnswer = (selected: string) => {
     if (selected === questions[currentQuestion].answer) {
@@ -56,22 +78,7 @@ export default function QuizScreen({ route, navigation }: any) {
     }
   };
 
-  useEffect(() => {
-    if (showResult) return;
-
-    if (timeLeft === 0) {
-      handleAnswer("");
-      setTimeLeft(15);
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      setTimeLeft((prev) => prev - 1);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [timeLeft, currentQuestion]);
-
+  // 🔹 Save Score
   useEffect(() => {
     if (!showResult) return;
 
@@ -80,6 +87,7 @@ export default function QuizScreen({ route, navigation }: any) {
       if (!currentUser) return;
 
       const userRef = doc(db, "users", currentUser.uid);
+
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -126,6 +134,34 @@ export default function QuizScreen({ route, navigation }: any) {
     saveScore();
   }, [showResult]);
 
+  // 🔹 Loading Screen
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text>Loading Questions...</Text>
+      </View>
+    );
+  }
+
+  // 🔹 Invalid Topic
+  if (!topic) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.heading}>Invalid Topic</Text>
+      </View>
+    );
+  }
+
+  // 🔹 No Questions Found
+  if (questions.length === 0) {
+    return (
+      <View style={styles.container}>
+        <Text>No Questions Available</Text>
+      </View>
+    );
+  }
+
+  // 🔹 Result Screen
   if (showResult) {
     return (
       <View style={styles.container}>
@@ -157,6 +193,7 @@ export default function QuizScreen({ route, navigation }: any) {
     );
   }
 
+  // 🔹 Quiz Screen
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>{topic} Quiz</Text>

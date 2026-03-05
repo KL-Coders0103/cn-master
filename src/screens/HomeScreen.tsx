@@ -4,6 +4,7 @@ import { auth, db } from "../services/firebase";
 import { useEffect, useState } from "react";
 import { doc, onSnapshot, collection, getDocs } from "firebase/firestore";
 import { useNavigation } from "@react-navigation/native";
+import { useAuth } from "../context/AuthContext";
 
 
 export default function HomeScreen() {
@@ -11,6 +12,7 @@ export default function HomeScreen() {
   const [average, setAverage] = useState(0);
   const [bestScore, setBestScore] = useState(0);
   const navigation : any = useNavigation();
+  const {role} = useAuth();
 
 useEffect(() => {
   const currentUser = auth.currentUser;
@@ -86,6 +88,14 @@ useEffect(() => {
       onPress={() => navigation.navigate("Leaderboard")}/>
 
       <Button title="Logout" onPress={() => signOut(auth)} />
+        {role === "admin" && (
+
+<Button
+title="Admin Panel"
+onPress={() => navigation.navigate("Admin")}
+/>
+
+)}
     </View>
   );
 }

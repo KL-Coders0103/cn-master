@@ -1,15 +1,17 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { auth } from "../services/firebase";
+import { auth, db } from "../services/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 interface AuthContextType {
   user: User | null;
+  role: string | null;
   loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
+  role: null,
   loading: true,
 });
 
@@ -17,17 +19,32 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }: any) => {
   const [user, setUser] = useState<User | null>(null);
+  const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+
+      setUser(currentUser);
+
       if (currentUser) {
-        await AsyncStorage.setItem("user", JSON.stringify(currentUser));
-        setUser(currentUser);
+        try {
+          const userRef = doc(db, "users", currentUser.uid);
+          const userDoc = await getDoc(userRef);
+
+          if (userDoc.exists()) {
+            setRole(userDoc.data().role || "student");
+          } else {
+            setRole("student");
+          }
+        } catch (error) {
+          console.log("Error fetching user role:", error);
+          setRole("student");
+        }
       } else {
-        await AsyncStorage.removeItem("user");
-        setUser(null);
+        setRole(null);
       }
+
       setLoading(false);
     });
 
@@ -35,7 +52,7 @@ export const AuthProvider = ({ children }: any) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, role, loading }}>
       {children}
     </AuthContext.Provider>
   );
