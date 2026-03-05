@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { auth, db } from "../services/firebase";
 import {
   doc,
@@ -11,14 +11,22 @@ import {
 } from "firebase/firestore";
 import { questionBank, Question } from "../data/questions";
 
+function shuffleArray(array: Question[]) {
+  return [...array].sort(() => Math.random() - 0.5);
+}
+
 export default function QuizScreen({ route, navigation }: any) {
   const { topic } = route.params || {};
-  const questions: Question[] = topic ? questionBank[topic] : [];
+
+  const questions: Question[] = useMemo(() => {
+    return topic ? shuffleArray(questionBank[topic]) : [];
+  }, [topic]);
+
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(15);
 
-  // Prevent crash if topic invalid
   if (!topic || !questions || questions.length === 0) {
     return (
       <View style={styles.container}>
@@ -42,12 +50,28 @@ export default function QuizScreen({ route, navigation }: any) {
 
     if (nextQuestion < questions.length) {
       setCurrentQuestion(nextQuestion);
+      setTimeLeft(15);
     } else {
       setShowResult(true);
     }
   };
 
-  // 🔥 Save score once when quiz completes
+  useEffect(() => {
+    if (showResult) return;
+
+    if (timeLeft === 0) {
+      handleAnswer("");
+      setTimeLeft(15);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [timeLeft, currentQuestion]);
+
   useEffect(() => {
     if (!showResult) return;
 
@@ -65,9 +89,7 @@ export default function QuizScreen({ route, navigation }: any) {
       let newStreak = 1;
 
       if (userData?.lastQuizDate) {
-        const lastDate = new Date(
-          userData.lastQuizDate.seconds * 1000
-        );
+        const lastDate = new Date(userData.lastQuizDate.seconds * 1000);
         lastDate.setHours(0, 0, 0, 0);
 
         const diffTime = today.getTime() - lastDate.getTime();
@@ -104,11 +126,11 @@ export default function QuizScreen({ route, navigation }: any) {
     saveScore();
   }, [showResult]);
 
-  // 🔥 Result Screen
   if (showResult) {
     return (
       <View style={styles.container}>
         <Text style={styles.heading}>Quiz Completed 🎉</Text>
+
         <Text style={styles.score}>
           Your Score: {score} / {questions.length}
         </Text>
@@ -119,6 +141,7 @@ export default function QuizScreen({ route, navigation }: any) {
             setCurrentQuestion(0);
             setScore(0);
             setShowResult(false);
+            setTimeLeft(15);
           }}
         >
           <Text style={styles.optionText}>Retry Quiz</Text>
@@ -134,12 +157,11 @@ export default function QuizScreen({ route, navigation }: any) {
     );
   }
 
-  // 🔥 Question Screen
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>
-        {topic} Quiz
-      </Text>
+      <Text style={styles.heading}>{topic} Quiz</Text>
+
+      <Text style={styles.time}>⏳ Time Left: {timeLeft}s</Text>
 
       <Text style={{ marginBottom: 10 }}>
         Question {currentQuestion + 1}/{questions.length}
@@ -178,6 +200,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 20,
   },
+  time: {
+    marginBottom: 10,
+    textAlign: "center",
+    fontWeight: "600",
+  },
   option: {
     backgroundColor: "#2563eb",
     padding: 15,
@@ -192,5 +219,6 @@ const styles = StyleSheet.create({
   score: {
     fontSize: 22,
     marginBottom: 20,
+    textAlign: "center",
   },
 });
