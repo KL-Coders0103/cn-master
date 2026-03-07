@@ -40,6 +40,17 @@ export default function AdminDashboard({ navigation }: any) {
   <Text style={{color:"#fff"}}>Add Notes</Text>
 </TouchableOpacity>
 
+<TouchableOpacity
+  onPress={() => navigation.navigate("AddResource")}
+  style={{
+    marginTop:20,
+    padding:15,
+    backgroundColor:"#2563eb"
+  }}
+>
+  <Text style={{color:"#fff"}}>Add Resource</Text>
+</TouchableOpacity>
+
     </View>
 
   );

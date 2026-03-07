@@ -82,6 +82,11 @@ useEffect(() => {
   title="View Notes"
   onPress={() => navigation.navigate("SelectTopic", { mode: "notes" })}
 />
+
+<Button
+  title="View Resources"
+  onPress={() => navigation.navigate("SelectTopic", { mode: "resources" })}
+/>
       <Button
   title="Start Quiz"
   onPress={() => navigation.navigate("SelectTopic", {mode: "quiz"})}
