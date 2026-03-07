@@ -29,6 +29,16 @@ export default function AdminDashboard({ navigation }: any) {
     Manage Questions
   </Text>
 </TouchableOpacity>
+<TouchableOpacity
+  onPress={() => navigation.navigate("AddNote")}
+  style={{
+    marginTop:20,
+    padding:15,
+    backgroundColor:"#2563eb"
+  }}
+>
+  <Text style={{color:"#fff"}}>Add Notes</Text>
+</TouchableOpacity>
 
     </View>
 

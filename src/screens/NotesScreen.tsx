@@ -1,56 +1,69 @@
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { View, Text, FlatList, TouchableOpacity } from "react-native";
+import { useEffect, useState } from "react";
+import { fetchNotesByTopic } from "../services/noteService";
 
-export default function NotesScreen() {
+export default function NotesScreen({ route }: any) {
+
+  const topic  = route?.params?.topic;
+
+  if(!topic) {
+    return(
+      <View style={{flex:1, justifyContent:"center", alignContent: "center"}}>
+        <Text>No Topic Selected</Text>
+      </View>
+    );
+  }
+
+  const [notes, setNotes] = useState<any[]>([]);
+
+  useEffect(() => {
+
+    const loadNotes = async () => {
+      const data = await fetchNotesByTopic(topic);
+      setNotes(data);
+    };
+
+    loadNotes();
+
+  }, [topic]);
+
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.heading}>OSI Model</Text>
-      <Text style={styles.content}>
-        The OSI Model has 7 layers:
-        {"\n\n"}
-        1. Physical Layer{"\n"}
-        2. Data Link Layer{"\n"}
-        3. Network Layer{"\n"}
-        4. Transport Layer{"\n"}
-        5. Session Layer{"\n"}
-        6. Presentation Layer{"\n"}
-        7. Application Layer
+
+    <View style={{ flex:1, padding:20 }}>
+
+      <Text style={{ fontSize:22, fontWeight:"bold", marginBottom:20 }}>
+        {topic} Notes
       </Text>
 
-      <Text style={styles.heading}>TCP/IP Model</Text>
-      <Text style={styles.content}>
-        TCP/IP has 4 layers:
-        {"\n\n"}
-        1. Network Access{"\n"}
-        2. Internet{"\n"}
-        3. Transport{"\n"}
-        4. Application
-      </Text>
+      <FlatList
+        data={notes}
+        keyExtractor={(item)=>item.id}
+        renderItem={({item}) => (
 
-      <Text style={styles.heading}>Routing</Text>
-      <Text style={styles.content}>
-        Routing determines the best path for data packets.
-        Examples:
-        {"\n"}• Static Routing
-        {"\n"}• Dynamic Routing
-      </Text>
-    </ScrollView>
+          <TouchableOpacity
+            style={{
+              padding:15,
+              backgroundColor:"#eee",
+              marginBottom:10,
+              borderRadius:8
+            }}
+          >
+
+            <Text style={{fontWeight:"bold"}}>
+              {item.title}
+            </Text>
+
+            <Text numberOfLines={2}>
+              {item.content}
+            </Text>
+
+          </TouchableOpacity>
+
+        )}
+      />
+
+    </View>
+
   );
-}
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: "#f4f6f8",
-  },
-  heading: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginTop: 20,
-    marginBottom: 10,
-  },
-  content: {
-    fontSize: 16,
-    lineHeight: 24,
-  },
-});
+}

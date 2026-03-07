@@ -12,6 +12,7 @@ import SelectTopicScreen from "../screens/SelectTopicScreen";
 import AdminDashboard from "../screens/AdminDashboard";
 import AddQuestionScreen from "../screens/AddQuestionScreen";
 import AdminQuestionsScreen from "../screens/AdminQuestionsScreen";
+import AddNoteScreen from "../screens/AddNoteScreen";
 
 
 const Stack = createNativeStackNavigator();
@@ -39,6 +40,7 @@ export default function AppNavigator() {
   name="AdminQuestions"
   component={AdminQuestionsScreen}
 />
+<Stack.Screen name="AddNote" component={AddNoteScreen} />
                     </>
                 ) : (
                     <>
