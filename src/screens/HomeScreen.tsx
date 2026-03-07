@@ -78,6 +78,11 @@ useEffect(() => {
         </>
       )}
 
+      <Button
+title="Search"
+onPress={()=>navigation.navigate("Search")}
+/>
+
     <Button
   title="View Notes"
   onPress={() => navigation.navigate("SelectTopic", { mode: "notes" })}

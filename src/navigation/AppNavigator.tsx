@@ -18,6 +18,7 @@ import AddResourceScreen from "../screens/AddResourceScreen";
 import AssignmentScreen from "../screens/AssignmentScreen";
 import SubmitAssignmentScreen from "../screens/SubmitAssignmentScreen";
 import AddAssignmentScreen from "../screens/AddAssignmentScreen";
+import SearchScreen from "../screens/SearchScreen";
 
 
 const Stack = createNativeStackNavigator();
@@ -51,6 +52,7 @@ export default function AppNavigator() {
 <Stack.Screen name="Assignments" component={AssignmentScreen}/>
 <Stack.Screen name="SubmitAssignment" component={SubmitAssignmentScreen}/>
 <Stack.Screen name="AddAssignment" component={AddAssignmentScreen}/>
+<Stack.Screen name="Search" component={SearchScreen}/>
                     </>
                 ) : (
                     <>
