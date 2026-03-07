@@ -103,7 +103,10 @@ onPress={()=>navigation.navigate("Search")}
       <Button title="View History" onPress={() => navigation.navigate("History")} />
       <Button title="View Leaderboard"
       onPress={() => navigation.navigate("Leaderboard")}/>
-
+<Button
+title="Study Planner"
+onPress={()=>navigation.navigate("Planner")}
+/>
       <Button title="Logout" onPress={() => signOut(auth)} />
         {role === "admin" && (
 
