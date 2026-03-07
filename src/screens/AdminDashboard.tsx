@@ -51,6 +51,17 @@ export default function AdminDashboard({ navigation }: any) {
   <Text style={{color:"#fff"}}>Add Resource</Text>
 </TouchableOpacity>
 
+<TouchableOpacity
+  onPress={()=>navigation.navigate("AddAssignment")}
+  style={{
+    marginTop:20,
+    padding:15,
+    backgroundColor:"#2563eb"
+  }}
+>
+  <Text style={{color:"#fff"}}>Add Assignment</Text>
+</TouchableOpacity>
+
     </View>
 
   );

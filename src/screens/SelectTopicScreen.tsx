@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, FlatList } from "react-native";
 import { useEffect, useState } from "react";
-import { fetchQuizTopics, fetchNotesTopics, fetchResourceTopics } from "../services/topicService";
+import { fetchQuizTopics, fetchNotesTopics, fetchResourceTopics, fetchAssignmentTopics } from "../services/topicService";
 
 export default function SelectTopicScreen({ navigation, route }: any) {
 
@@ -18,6 +18,9 @@ export default function SelectTopicScreen({ navigation, route }: any) {
     }else if(mode === "resources"){
       const data = await fetchResourceTopics();
       setTopics(data);
+  }else if(mode === "assignments"){
+      const data = await fetchAssignmentTopics();
+      setTopics(data);
   }else{
       const data = await fetchQuizTopics();
       setTopics(data);
@@ -34,7 +37,7 @@ export default function SelectTopicScreen({ navigation, route }: any) {
     <View style={{ flex:1, padding:20 }}>
 
       <Text style={{ fontSize:22, fontWeight:"bold", marginBottom:20 }}>
-  {mode === "notes" ? "Select Topic for Notes" : mode === "resources" ? "select topic for resources" : "Select Topic for Quiz"}
+  {mode === "notes" ? "Select Topic for Notes" : mode === "resources" ? "select topic for resources" : mode === "assignments" ? "select topic for assignments" : "Select Topic for Quiz"}
 </Text>
 
       <FlatList
@@ -56,7 +59,8 @@ export default function SelectTopicScreen({ navigation, route }: any) {
 
   }else if(mode === "resources"){
     navigation.navigate("Resources", { topic: item });
-
+  }else if(mode === "assignments"){
+    navigation.navigate("Assignments", { topic: item });
   }else{
     navigation.navigate("Quiz", { topic: item });
   }

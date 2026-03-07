@@ -48,3 +48,19 @@ export const fetchResourceTopics = async () => {
 
   return Array.from(topicsSet);
 };
+
+export const fetchAssignmentTopics = async () => {
+
+  const snapshot = await getDocs(collection(db, "assignments"));
+
+  const topicsSet = new Set<string>();
+
+  snapshot.docs.forEach((doc) => {
+    const data = doc.data();
+    if (data.topic) {
+      topicsSet.add(data.topic);
+    }
+  });
+
+  return Array.from(topicsSet);
+};

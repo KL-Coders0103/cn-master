@@ -15,6 +15,9 @@ import AdminQuestionsScreen from "../screens/AdminQuestionsScreen";
 import AddNoteScreen from "../screens/AddNoteScreen";
 import ResourceScreen from "../screens/ResourceScreen";
 import AddResourceScreen from "../screens/AddResourceScreen";
+import AssignmentScreen from "../screens/AssignmentScreen";
+import SubmitAssignmentScreen from "../screens/SubmitAssignmentScreen";
+import AddAssignmentScreen from "../screens/AddAssignmentScreen";
 
 
 const Stack = createNativeStackNavigator();
@@ -45,6 +48,9 @@ export default function AppNavigator() {
 <Stack.Screen name="AddNote" component={AddNoteScreen} />
 <Stack.Screen name="Resources" component={ResourceScreen} />
 <Stack.Screen name="AddResource" component={AddResourceScreen} />
+<Stack.Screen name="Assignments" component={AssignmentScreen}/>
+<Stack.Screen name="SubmitAssignment" component={SubmitAssignmentScreen}/>
+<Stack.Screen name="AddAssignment" component={AddAssignmentScreen}/>
                     </>
                 ) : (
                     <>
